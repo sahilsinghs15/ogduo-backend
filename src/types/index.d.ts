@@ -14,8 +14,27 @@ declare module "multer-storage-cloudinary" {
     constructor(options: CloudinaryStorageOptions);
   }
 }
-declare module "express-serve-static-core" {
-  interface Request {
-    imageUri?: string;
+
+import { Session } from "express-session";
+
+export interface ISession extends Session {
+  token: string;
+}
+
+import { Request } from "express";
+declare global {
+  namespace Express {
+    export interface Request {
+      file?: {
+        path?: string;
+        buffer?: Buffer;
+        mimetype?: string;
+      };
+      imageUri?: string;
+      user?: {
+        id: string;
+      };
+    }
   }
 }
+

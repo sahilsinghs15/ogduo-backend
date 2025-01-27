@@ -36,7 +36,7 @@ export const profilePhotoUpload = async (
     }
 
     // Use Cloudinary's upload middleware
-    uploadProfileImage.single("file")(req, res, async (err: any) => {
+    uploadProfileImage.single("file")(req , res, async (err: any) => {
       if (err) {
         return res.status(500).json({ message: "Image upload failed.", error: err });
       }

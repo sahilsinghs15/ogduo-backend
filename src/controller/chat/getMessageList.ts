@@ -1,5 +1,4 @@
 import { NextFunction, Response, response } from "express";
-import { CustomRequest } from "../../types/request";
 import prisma from "../../lib/prisma/init";
 
 export const getMessageList = async (

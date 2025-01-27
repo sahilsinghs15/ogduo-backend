@@ -1,9 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../../lib/prisma/init";
 import { compareHashedPassword, createJWT } from "../../middleware/auth";
+import session from "express-session";
+import { ISession } from "../../types";
 
 export async function loginUser(
-  req: any,
+  req: Request,
   res: Response,
   next: NextFunction
 ) {
@@ -47,7 +49,7 @@ export async function loginUser(
           id: user.id,
           verified: user.emailIsVerified,
         });
-        req.session.token = token;
+        (req.session as ISession).token = token;
         return res.status(200).json({
           token,
           data: {

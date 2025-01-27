@@ -26,7 +26,7 @@ router.get("/pic/:id", (req, res) => {
   return res.sendFile(path.join(rootDir, "/uploads/", `nopic.png`));
 });
 
-router.get("/video/:id", (req, res) => {
+router.get("/video/:id", (req:any, res:any) => {
   const { id } = req.params;
 
   if (fs.existsSync(path.join(rootDir, "/uploads/", `${id}`))) {
@@ -36,7 +36,7 @@ router.get("/video/:id", (req, res) => {
   return res.json(null);
 });
 
-router.get("/audio/:id", (req, res) => {
+router.get("/audio/:id", (req : any, res : any) => {
   const { id } = req.params;
 
   if (fs.existsSync(path.join(rootDir, "/uploads/", `${id}`))) {

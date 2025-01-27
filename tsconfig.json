@@ -1,13 +1,9 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Node 21",
-  "_version": "21.0.0",
-
   "compilerOptions": {
     "lib": ["es2023"],
     "module": "node16",
     "target": "es2022",
-    "typeRoots": ["./node_modules/@types", "./src/types"], // Specify the directory, not the file
+    "typeRoots": ["./node_modules/@types", "./src/types"], // Ensure this points to the folder
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -16,5 +12,6 @@
     "outDir": "./dist",
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "src/types/**/*"], // Ensure all type files are included
+  "exclude": ["node_modules"]
 }

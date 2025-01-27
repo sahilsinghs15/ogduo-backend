@@ -3,7 +3,7 @@ import prisma from "../../lib/prisma/init";
 import { getUser } from "../../controller/user/getUser";
 import { getFollows } from "../../controller/user/getFollows";
 import config from "../../config/env";
-import { upload, uploadOcean } from "../../config/multer";
+import { uploadProfileImage } from "../../config/multer";
 import { updatePhoto } from "../../controller/user/updatePhoto";
 import { getGuest } from "../../controller/user/getGuest";
 import { saveNotificationId } from "../../controller/user/saveNotificationId";
@@ -23,13 +23,13 @@ import { deleteAccount } from "../../controller/user/deleteAccount";
 
 const isProduction = config.stage === "production";
 const router = Router();
-router.get("/get-user", getUser);
-router.get("/get-guest", getGuest);
+router.get("/get-user", getUser as any);
+router.get("/get-guest", getGuest as any);
 router.get("/get-follows", getFollows);
 router.get("/token-valid", (req: any, res: Response, next: NextFunction) => {
   res.json({ msg: true });
 });
-router.get("/get-notifications", getNotifications);
+router.get("/get-notifications", getNotifications as any);
 // router.post(
 //   "/update-photo",
 
@@ -42,24 +42,24 @@ router.get("/get-notifications", getNotifications);
 
 router.post(
   "/update-photo",
-  upload.single("photo"),
-  profilePhotoUpload,
-  updatePhoto
+  uploadProfileImage.single("photo"),
+  profilePhotoUpload as any,
+  updatePhoto as any
 );
-router.put("/update-notification-id", saveNotificationId);
+router.put("/update-notification-id", saveNotificationId as any);
 router.get(
   "/get-following",
   followerFollowingValidator,
   handleErrors,
-  getFollowingList
+  getFollowingList as any
 );
 router.get(
   "/get-followers",
   followerFollowingValidator,
   handleErrors,
-  getFollowersList
+  getFollowersList as any
 );
 router.get("/logout", logout);
-router.put("/update-data", updateDataValidator, handleErrors, changeData);
-router.delete("/delete-account", deleteAccountValidator, handleErrors, deleteAccount);
+router.put("/update-data", updateDataValidator, handleErrors, changeData as any);
+router.delete("/delete-account", deleteAccountValidator, handleErrors, deleteAccount as any);
 export default router;

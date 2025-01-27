@@ -78,8 +78,8 @@ app.use("/api", globalRouter);
 
 app.use("/api/auth", authRateLimiter, authRouter);
 
-app.use("/api/services", blockJWT, protect, services);
-app.use("/api/user", blockJWT, protect, user);
-app.use("/api/chat", blockJWT, protect, chat);
-app.use(ErrorHandler);
+app.use("/api/services", blockJWT as any, protect as any, services);
+app.use("/api/user", blockJWT as any, protect as any, user);
+app.use("/api/chat", blockJWT as any, protect as any, chat);
+app.use(ErrorHandler as any);
 export default server;

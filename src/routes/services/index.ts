@@ -42,36 +42,36 @@ const router = Router();
 const isProduction = config.stage === "production";
 
 // Routes for posts
-router.post("/post", createPostValidator, handleErrors, postContent);
-router.get("/all-posts", getPostsValidator, handleErrors, getAllPosts);
-router.get("/random-posts", getRandomPosts);
-router.get("/random-people", getRandomFollowers);
-router.get("/search-posts", searchValidator, handleErrors, searchForPosts);
-router.get("/search-people", searchValidator, handleErrors, searchPeople);
+router.post("/post", createPostValidator, handleErrors, postContent as any);
+router.get("/all-posts", getPostsValidator, handleErrors, getAllPosts as any);
+router.get("/random-posts", getRandomPosts as any);
+router.get("/random-people", getRandomFollowers as any);
+router.get("/search-posts", searchValidator, handleErrors, searchForPosts as any);
+router.get("/search-people", searchValidator, handleErrors, searchPeople as any);
 
 // Cloudinary-based photo upload
-router.post("/upload-photo", uploadProfileImage.single("photo"), profilePhotoUpload);
-router.post("/upload-post-photo", uploadPostImage.single("photo"), postPhotoUpload);
+router.post("/upload-photo", uploadProfileImage.single("photo"), profilePhotoUpload as any);
+router.post("/upload-post-photo", uploadPostImage.single("photo"), postPhotoUpload as any);
 
 // Video upload (remaining with existing logic)
 router.post(
   "/upload-video",
   isProduction ? uploadVideo.single("video") : uploadVideo.single("video"),
-  postVideo
+  postVideo as any
 );
 
 // Audio upload (remaining with existing logic)
 router.post(
   "/upload-audio",
   isProduction ? uploadAudio.single("audio") : uploadAudio.single("audio"),
-  postAudio
+  postAudio as any
 );
 
 // Routes for user actions
-router.get("/follow", followValidator, handleErrors, followUser);
-router.get("/unfollow", followValidator, handleErrors, unfollowUser);
-router.get("/like-post", likeValidator, handleErrors, like);
-router.post("/post-comment", postCommentValidator, handleErrors, postComment);
+router.get("/follow", followValidator, handleErrors, followUser as any);
+router.get("/unfollow", followValidator, handleErrors, unfollowUser as any);
+router.get("/like-post", likeValidator, handleErrors, like as any);
+router.post("/post-comment", postCommentValidator, handleErrors, postComment as any);
 router.get(
   "/get-postComment",
   getCommentValidator,
@@ -82,12 +82,12 @@ router.get(
   "/followed-posts",
   getPostsValidator,
   handleErrors,
-  getPostByFollowing
+  getPostByFollowing as any
 );
 router.get("/my-posts", getPostsValidator, handleErrors, getMyPosts);
 router.get("/single-post", getSinglePost);
 router.get("/guest-posts", getPostsValidator, handleErrors, getGuestPosts);
-router.get("/re-post", followerFollowingValidator, handleErrors, rePost);
+router.get("/re-post", followerFollowingValidator, handleErrors, rePost as any);
 router.delete("/delete-post", deletePostById);
 
 export default router;

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build && cross-env STAGE=production node dist/server.js",
     "build": "npx tsc",
-    "dev": "nodemon src/server.ts",
+    "dev": "nodemon dist/server.js",
     "dev:prod": "cross-env STAGE=production npx nodemon"
   },
   "keywords": [
@@ -18,7 +18,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "latest",
     "@types/express": "latest",
-    "@types/express-session": "^1.18.0",
+    "@types/express-session": "^1.18.1",
     "@types/ffmpeg": "^1.0.7",
     "@types/fluent-ffmpeg": "^2.1.21",
     "@types/gifsicle": "^5.2.2",
@@ -49,7 +49,7 @@
     "expo-server-sdk": "^3.10.0",
     "express": "latest",
     "express-rate-limit": "^6.11.2",
-    "express-session": "^1.18.0",
+    "express-session": "^1.18.1",
     "express-validator": "^7.1.0",
     "ffmpeg": "^0.0.4",
     "fluent-ffmpeg": "^2.1.3",
