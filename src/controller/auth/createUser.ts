@@ -19,10 +19,10 @@ export async function createUser(
   try {
     const user = await prisma.user.create({
       data: {
-        name,
-        password: await createHashedPassword(password),
         email,
+        name,
         userName: formattedUserName,
+        password: await createHashedPassword(password),
       },
     });
 

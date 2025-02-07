@@ -59,10 +59,22 @@ export const sessionMiddleWare = session({
 });
 server.headersTimeout = 5000;
 server.requestTimeout = 10000;
-app.set("trust proxy", true);
+app.set("trust proxy", 1);
 app.use(sessionMiddleWare);
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:8081',         // Expo dev client
+    'exp://192.168.0.104:8081',     // Expo Go on local network
+    'http://192.168.0.104:8081',    // Your local IP
+    'http://10.0.2.2:8081',         // Android emulator
+    'http://localhost:19006',        // Expo web
+    'capacitor://localhost',         // Capacitor
+    'ionic://localhost'              // Ionic
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(helmet());
 var accessLogStream = fs.createWriteStream(path.join("./", "access.log"), {
   flags: "a",
