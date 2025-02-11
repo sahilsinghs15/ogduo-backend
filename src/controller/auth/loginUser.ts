@@ -9,14 +9,12 @@ export async function loginUser(
   res: Response,
   next: NextFunction
 ) {
-  const { userName, password }: { userName: string; password: string } =
-    req.body;
-  const formattedUserName = userName.toLowerCase();
   try {
+    const { userName, password } = req.body;
+    const formattedUserName = userName.toLowerCase();
+    
     const user = await prisma.user.findUnique({
-      where: {
-        userName: formattedUserName,
-      },
+      where: { userName: formattedUserName },
       select: {
         password: true,
         id: true,
@@ -31,48 +29,35 @@ export async function loginUser(
       },
     });
 
-    if (user) {
-      const {
-        email,
-        userName,
-        imageUri,
-        verified,
-        emailIsVerified,
-        name,
-        followersCount,
-        id,
-        followingCount,
-      } = user;
-      if (await compareHashedPassword(password, user.password)) {
-        const token = createJWT({
-          userName,
-          id: user.id,
-          verified: user.emailIsVerified,
-        });
-        (req.session as ISession).token = token;
-        return res.status(200).json({
-          token,
-          data: {
-            email,
-            userName,
-            imageUri,
-            emailIsVerified,
-            name,
-            id,
-            verified,
-            followersCount: followersCount?.toString(),
-            followingCount: followingCount?.toString(),
-          },
+    if (user && await compareHashedPassword(password, user.password)) {
+      const token = createJWT({
+        userName: formattedUserName,
+        id: user.id,
+        verified: user.emailIsVerified,
+      });
 
-          msg: "login success",
-        });
-      }
-      return res
-        .status(401)
-        .json({ msg: "User Name or Password is incorrect" });
+      // Set token in session
+      (req.session as any).token = token;
+
+      res.status(200).json({
+        token,
+        data: {
+          id: user.id,
+          userName: formattedUserName,
+          verified: user.emailIsVerified,
+          email: user.email,
+          name: user.name,
+          imageUri: user.imageUri,
+          emailIsVerified: user.emailIsVerified,
+          followersCount: user.followersCount?.toString(),
+          followingCount: user.followingCount?.toString(),
+        },
+        msg: "Login successful"
+      });
+    } else {
+      res.status(401).json({ msg: "Invalid credentials" });
     }
-    return res.status(401).json({ msg: "User Name or Password is incorrect" });
-  } catch (e: any) {
-    next(e);
+  } catch (error) {
+    next(error);
   }
 }

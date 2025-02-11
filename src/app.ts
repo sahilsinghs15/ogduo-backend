@@ -3,7 +3,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import cors from "cors";
-import { blockJWT, protect } from "./middleware/auth";
+import { blockJWT, protect } from "./middleware/auth/index";
 import globalRouter from "./routes/global";
 import authRouter from "./routes/auth";
 import services from "./routes/services";
@@ -28,7 +28,11 @@ let redisClient = createClient({
   socket: {
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
-  },
+    reconnectStrategy: (retries: number, cause: Error) => {
+      if (retries > 10) return false;
+      return Math.min(retries * 100, 3000);
+    }
+  }
 });
 
 redisClient.connect().catch(console.error);
@@ -53,9 +57,15 @@ const app = express();
 const server = http.createServer(app);
 export const sessionMiddleWare = session({
   secret: process.env.SECRET as string,
-  resave: false,
-  store: redisStore,
+  resave: true,
   saveUninitialized: false,
+  store: redisStore,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax'
+  }
 });
 server.headersTimeout = 5000;
 server.requestTimeout = 10000;
@@ -63,17 +73,10 @@ app.set("trust proxy", 1);
 app.use(sessionMiddleWare);
 
 app.use(cors({
-  origin: [
-    'http://localhost:8081',         // Expo dev client
-    'exp://192.168.0.104:8081',     // Expo Go on local network
-    'http://192.168.0.104:8081',    // Your local IP
-    'http://10.0.2.2:8081',         // Android emulator
-    'http://localhost:19006',        // Expo web
-    'capacitor://localhost',         // Capacitor
-    'ionic://localhost'              // Ionic
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(helmet());
 var accessLogStream = fs.createWriteStream(path.join("./", "access.log"), {
@@ -91,7 +94,7 @@ app.use("/api", globalRouter);
 app.use("/api/auth", authRateLimiter, authRouter);
 
 app.use("/api/services", blockJWT as any, protect as any, services);
-app.use("/api/user", blockJWT as any, protect as any, user);
+app.use("/api/user", blockJWT as any, user);//
 app.use("/api/chat", blockJWT as any, protect as any, chat);
 app.use(ErrorHandler as any);
 export default server;

@@ -20,6 +20,7 @@ import {
 import { changeData } from "../../controller/user/changeData";
 import { logout } from "../../controller/user/logout";
 import { deleteAccount } from "../../controller/user/deleteAccount";
+import { protect } from "../../middleware/auth/index";
 
 const isProduction = config.stage === "production";
 const router = Router();
@@ -62,4 +63,26 @@ router.get(
 router.get("/logout", logout);
 router.put("/update-data", updateDataValidator, handleErrors, changeData as any);
 router.delete("/delete-account", deleteAccountValidator, handleErrors, deleteAccount as any);
+router.post("/push-token", protect, async (req, res) => {
+  try {
+    const { pushToken } = req.body;
+    const userId = req?.user?.id;
+
+    // Save push token to database
+    await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        pushToken: pushToken
+      } as any  // Temporary fix until Prisma schema is updated
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Push token registration error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to register push token'
+    });
+  }
+});
 export default router;
