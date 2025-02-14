@@ -48,6 +48,29 @@ export const loginValidation = [
     .withMessage("Password must be between 2 and 15 characters long."),
 ];
 
+export const postContentValidation = [
+  // Text is mandatory
+  body('text')
+    .notEmpty()
+    .withMessage('Text content is required'),
+  
+  // Type validation
+  body('type')
+    .optional()
+    .isIn(['text', 'image', 'audio', 'video'])
+    .withMessage('Invalid content type'),
+  
+  // Photo validation when type is image
+  body('photo')
+    .optional()
+    .custom((value, { req }) => {
+      if (req.body.type === 'image' && !value) {
+        throw new Error('Photo is required when type is image');
+      }
+      return true;
+    })
+];
+
 export const createPostValidator = [
   body("user").optional().isMongoId().withMessage("Invalid user ID"),
   body(["audioUri", "videoUri", "photo"]).custom((value, { req }) => {
@@ -86,10 +109,6 @@ export const createPostValidator = [
       return true;
     })
     .withMessage("Photo Uri must be an array of URI"),
-  body("audioTitle")
-    .if(body("audioUri").exists())
-    .notEmpty()
-    .withMessage("Audio title is required if audio URI is provided"),
   body("videoTitle")
     .if(body("videoUri").exists())
     .isString()

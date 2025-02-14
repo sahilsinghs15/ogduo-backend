@@ -1,16 +1,12 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Response, Request } from "express";
 import prisma from "../../../lib/prisma/init";
 import validator from "validator";
 import ogs from "open-graph-scraper";
 import expo from "../../../lib/expo/init";
 import { handleNotificationsForPosts } from "../../../modules/handleNotifications/forPosts";
 
-export const postContent = async (
-  req: any,
-  res: Response,
-  next: NextFunction
-) => {
-  const { id } = req?.user;
+export const postContent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { id } = req?.user as { id: string };
 
   const {
     audioUri,
@@ -22,17 +18,17 @@ export const postContent = async (
     videoThumbnail,
     photo,
   }: {
-    audioUri: string;
-    audioTitle: string;
-    videoUri: string;
-    videoTitle: string;
-    photoUri: string[];
+    audioUri?: string;
+    audioTitle?: string;
+    videoUri?: string;
+    videoTitle?: string;
+    photoUri?: string[];
     postText: string;
-    videoThumbnail: string;
-    photo: {
-      uri: string;
-      height: number;
-      width: number;
+    videoThumbnail?: string;
+    photo?: {
+      uri?: string;
+      height?: number;
+      width?: number;
     };
   } = req.body;
   console.log("body🚀", req.body);
@@ -128,7 +124,7 @@ export const postContent = async (
                 },
               ]);
             }
-            return res.json({ msg: "posted" });
+            res.status(200).json({ msg: "posted" });
           }
         }
         if (error) {
@@ -175,7 +171,7 @@ export const postContent = async (
                 },
               ]);
             }
-            return res.json({ msg: "posted" });
+            res.status(200).json({ msg: "posted" });
           }
         }
       }
@@ -215,36 +211,30 @@ export const postContent = async (
           select: {
             userName: true,
             imageUri: true,
-            followers: { select: { notificationId: true, id: true } },
+            followers: { 
+              where: { 
+                notificationId: { not: null } // Only get followers with notification IDs
+              },
+              select: { 
+                notificationId: true, 
+                id: true 
+              } 
+            },
           },
         });
-        for (let i in signedInUser?.followers) {
-          expo.sendPushNotificationsAsync([
-            {
-              to: signedInUser?.followers[Number(i)].notificationId as string,
-              sound: "default",
-              badge: 1,
-              mutableContent: true,
-              title: `@${signedInUser.userName}`,
-              body: `just posted`,
-              categoryId: "post",
-              data: {
-                postId: post.id,
-                url: `qui-ojo://posts/${post.id}`,
-              },
-            },
-          ]);
+
+        // Only proceed with notifications if there are followers
+        if (signedInUser?.followers?.length && signedInUser?.followers?.length > 0) {
+          await handleNotificationsForPosts(
+            post.postText || "New Media content",
+            id,
+            signedInUser?.imageUri || "",
+            signedInUser?.followers,
+            post.id
+          );
         }
-        handleNotificationsForPosts(
-          post.postText ? post?.postText : "New Media content",
-          id,
-          signedInUser?.imageUri as string,
-          signedInUser?.followers,
-          post.id
-        ).then((e) => {
-          console.log(e);
-        });
-        return res.json({ msg: "posted" });
+
+        res.status(200).json({ msg: "posted" });
       }
     } catch (e) {
       next(e);

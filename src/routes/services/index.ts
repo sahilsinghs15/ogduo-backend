@@ -10,6 +10,7 @@ import {
   likeValidator,
   postCommentValidator,
   searchValidator,
+  postContentValidation,
 } from "./../../middleware/validation/inputValidation";
 import config from "../../config/env";
 import { uploadAudio, uploadProfileImage,uploadPostImage, uploadVideo } from "../../config/multer"; // Import only `upload` for Cloudinary integration
@@ -35,6 +36,7 @@ import { getSinglePost } from "../../controller/services/posts/getSinglePost";
 import { deletePostById } from "../../controller/services/posts/deletePostbyId";
 import { profilePhotoUpload } from "../../modules/handlePhotoUpload/profilePhotoUpload";
 import { postPhotoUpload } from "../../modules/handlePhotoUpload/postPhotoUpload";
+import { Request, Response, NextFunction } from "express";
 
 const router = Router();
 
@@ -42,7 +44,19 @@ const router = Router();
 const isProduction = config.stage === "production";
 
 // Routes for posts
-router.post("/post", createPostValidator, handleErrors, postContent as any);
+router.post("/post", 
+  uploadPostImage.single("photo"),  // Handle file upload first
+  postContentValidation, 
+  handleErrors, 
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.file) {
+      req.body.photo = {
+        uri: req.file.path,
+      };
+    }
+    return postContent(req, res, next);
+  }
+);
 router.get("/all-posts", getPostsValidator, handleErrors, getAllPosts as any);
 router.get("/random-posts", getRandomPosts as any);
 router.get("/random-people", getRandomFollowers as any);
