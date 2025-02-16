@@ -47,7 +47,7 @@ const compareHashedPassword = async (plainPassword: string, hashedPassword: stri
 
 // Function to create JWT
 const createJWT = (payload: JwtPayloadWithUser): string => {
-  return jwt.sign(payload, process.env.SECRET as string, { expiresIn: '1h' });
+  return jwt.sign(payload, process.env.SECRET as string, { expiresIn: '30d' });
 };
 
 // Middleware to block JWT

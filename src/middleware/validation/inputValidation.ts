@@ -48,27 +48,53 @@ export const loginValidation = [
     .withMessage("Password must be between 2 and 15 characters long."),
 ];
 
-export const postContentValidation = [
-  // Text is mandatory
-  body('text')
+export const basePostValidation = [
+  body("postText")
+    .trim()
     .notEmpty()
-    .withMessage('Text content is required'),
-  
-  // Type validation
-  body('type')
-    .optional()
-    .isIn(['text', 'image', 'audio', 'video'])
-    .withMessage('Invalid content type'),
-  
-  // Photo validation when type is image
-  body('photo')
-    .optional()
+    .withMessage("Post text content is required")
+];
+
+export const imagePostValidation = [
+  ...basePostValidation,
+  body("photo")
     .custom((value, { req }) => {
-      if (req.body.type === 'image' && !value) {
-        throw new Error('Photo is required when type is image');
+      if (!req.file) {
+        throw new Error("Image file is required");
       }
       return true;
     })
+];
+
+export const audioPostValidation = [
+  ...basePostValidation,
+  body("audioUri")
+    .notEmpty()
+    .withMessage("Audio URI is required")
+    .isURL()
+    .withMessage("Invalid audio URI"),
+  body("audioTitle")
+    .optional()
+    .isString()
+    .withMessage("Audio title must be a string")
+];
+
+export const videoPostValidation = [
+  ...basePostValidation,
+  body("videoUri")
+    .notEmpty()
+    .withMessage("Video URI is required")
+    .isURL()
+    .withMessage("Invalid video URI"),
+  body("videoTitle")
+    .optional()
+    .isString()
+    .withMessage("Video title must be a string"),
+  body("videoThumbnail")
+    .notEmpty()
+    .withMessage("Video thumbnail is required")
+    .isURL()
+    .withMessage("Invalid video thumbnail URL")
 ];
 
 export const createPostValidator = [

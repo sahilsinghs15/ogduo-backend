@@ -10,12 +10,17 @@ import {
   likeValidator,
   postCommentValidator,
   searchValidator,
-  postContentValidation,
+  basePostValidation,
+  imagePostValidation,
+  audioPostValidation,
+  videoPostValidation
 } from "./../../middleware/validation/inputValidation";
 import config from "../../config/env";
+import multer from 'multer';
 import { uploadAudio, uploadProfileImage,uploadPostImage, uploadVideo } from "../../config/multer"; // Import only `upload` for Cloudinary integration
 import { getAllPosts } from "../../controller/services/posts/getAllPosts";
 import { postContent } from "../../controller/services/posts/postContent";
+import { postImage } from "../../controller/services/posts/postImage";
 import { getRandomPosts } from "../../controller/services/posts/getRandomPosts";
 import { postAudio } from "../../controller/services/posts/postAudio";
 // import { postPhoto } from "../../controller/services/posts/postPhoto";
@@ -37,26 +42,64 @@ import { deletePostById } from "../../controller/services/posts/deletePostbyId";
 import { profilePhotoUpload } from "../../modules/handlePhotoUpload/profilePhotoUpload";
 import { postPhotoUpload } from "../../modules/handlePhotoUpload/postPhotoUpload";
 import { Request, Response, NextFunction } from "express";
+import { verifyToken as auth } from '../../middleware/auth/index';
 
 const router = Router();
 
 // Define whether the environment is production
 const isProduction = config.stage === "production";
 
-// Routes for posts
-router.post("/post", 
-  uploadPostImage.single("photo"),  // Handle file upload first
-  postContentValidation, 
-  handleErrors, 
-  async (req: Request, res: Response, next: NextFunction) => {
-    if (req.file) {
-      req.body.photo = {
-        uri: req.file.path,
-      };
+// Configure multer for memory storage
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Only image files are allowed'));
+      return;
     }
-    return postContent(req, res, next);
+    cb(null, true);
   }
+});
+
+// Post routes
+router.post(
+  "/post/image",
+  auth,
+  upload.single('photo'), 
+  imagePostValidation,
+  handleErrors,
+  postImage
 );
+
+router.post(
+  "/post",
+  auth,
+  basePostValidation,
+  handleErrors,
+  postContent
+);
+
+router.post(
+  "/post/audio",
+  auth,
+  uploadAudio.single("audio"),
+  audioPostValidation,
+  handleErrors,
+  postContent
+);
+
+router.post(
+  "/post/video",
+  auth,
+  uploadVideo.single("video"),
+  videoPostValidation,
+  handleErrors,
+  postContent
+);
+
 router.get("/all-posts", getPostsValidator, handleErrors, getAllPosts as any);
 router.get("/random-posts", getRandomPosts as any);
 router.get("/random-people", getRandomFollowers as any);
