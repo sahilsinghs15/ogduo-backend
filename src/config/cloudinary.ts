@@ -11,7 +11,7 @@ export const uploadToCloudinary = async (buffer: Buffer): Promise<{ secure_url?:
   try {
     // Convert buffer to base64
     const b64 = buffer.toString('base64');
-    const dataURI = `data:image/jpeg;base64,${b64}`;
+    const dataURI = `data:image/jpeg;base64,${b64}`;//**This is hardcoded for jped type of image i have to make it dynamic in future
 
     // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(dataURI, {

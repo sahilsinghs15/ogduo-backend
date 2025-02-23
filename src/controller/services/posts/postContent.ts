@@ -10,7 +10,6 @@ export const postContent = async (req: Request, res: Response, next: NextFunctio
     const {
       postText,
       audioUri,
-      audioTitle,
       videoUri,
       videoTitle,
       videoThumbnail
@@ -60,8 +59,7 @@ export const postContent = async (req: Request, res: Response, next: NextFunctio
           postText,
           ...(audioUri && {
             audioUri: ensureHttpUrl(audioUri),
-            audioTitle
-          }),
+              }),
           ...(videoUri && {
             videoUri: ensureHttpUrl(videoUri),
             videoTitle,

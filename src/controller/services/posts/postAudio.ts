@@ -1,18 +1,42 @@
 import { Response, Request, NextFunction } from "express";
-import config from "../../../config/env/";
-export const postAudio = (req: any, res: Response, next: NextFunction) => {
-  console.log("🚀 ~ file: postPhoto.ts:4 ~ postPhoto ~ req:", req.file);
-  const url = req.protocol + "://" + req.get("host");
-  if (config.stage === "production") {
-    return res.send({ audio: req.file?.location });
-  }
-  if (req.file) {
-    const path = `${url}/api/pic/${req.file.path.split("\\")[1]}`;
+import { v2 as cloudinary } from "cloudinary";
+import { uploadAudio } from "../../../config/multer";
+import prisma from "../../../lib/prisma/init";
 
-    console.log("🚀 ~ file: index.ts:42 ~ router.post ~ path:", path);
+export const postAudio = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: "No audio file provided" });
+      return;
+    }
 
-    res.send({ audio: path });
-  } else {
-    res.json({ msg: "Error in upload" });
+    const { postText } = req.body;
+    const userId = (req as any).user.id;
+
+    // Upload audio to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "auto", // Automatically detect the file type
+      folder: "uploads/audio",
+    });
+
+    // Create a new post using Prisma
+    const newPost = await prisma.post.create({
+      data: {
+        userId,
+        postText,
+        audioUri: result.secure_url,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    res.status(201).json({
+      message: "Audio posted successfully",
+      post: newPost,
+    });
+  } catch (error) {
+    console.error("Error uploading audio:", error);
+    next(error);
   }
 };

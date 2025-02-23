@@ -22,7 +22,7 @@ import { getAllPosts } from "../../controller/services/posts/getAllPosts";
 import { postContent } from "../../controller/services/posts/postContent";
 import { postImage } from "../../controller/services/posts/postImage";
 import { getRandomPosts } from "../../controller/services/posts/getRandomPosts";
-import { postAudio } from "../../controller/services/posts/postAudio";
+import { postAudio } from "../../controller/services/posts/postAudio";// Update the import to use the new postAudio controller
 // import { postPhoto } from "../../controller/services/posts/postPhoto";
 import { postVideo } from "../../controller/services/posts/postVideo";
 import { followUser } from "../../controller/services/follow/followUser";
@@ -88,16 +88,16 @@ router.post(
   uploadAudio.single("audio"),
   audioPostValidation,
   handleErrors,
-  postContent
+  postAudio
 );
 
 router.post(
   "/post/video",
   auth,
-  uploadVideo.single("video"),
+  uploadVideo.single("video") ,
   videoPostValidation,
   handleErrors,
-  postContent
+  postVideo 
 );
 
 router.get("/all-posts", getPostsValidator, handleErrors, getAllPosts as any);
