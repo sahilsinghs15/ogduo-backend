@@ -2,7 +2,7 @@ import { NextFunction, Response, Request } from "express";
 import prisma from "../../../lib/prisma/init";
 import { handleNotificationsForPosts } from "../../../modules/handleNotifications/forPosts";
 import sharp from "sharp";
-import { uploadToCloudinary } from "../../../config/cloudinary";
+import { uploadImageToCloudinary} from "../../../config/cloudinary";
 
 // Helper function to handle post notifications
 async function handlePostNotifications(userId: string, postId: string, postText: string) {
@@ -58,7 +58,7 @@ export const postImage = async (req: Request, res: Response, next: NextFunction)
     const metadata = await image.metadata();
 
     // Upload to Cloudinary
-    const uploadResult = await uploadToCloudinary(photo.buffer);
+    const uploadResult = await uploadImageToCloudinary(photo.buffer);
     
     if (!uploadResult.secure_url) {
       res.status(500).json({

@@ -48,8 +48,6 @@ export const getAllPosts = async (
         photoUri: true,
         videoViews: true,
         userId: true,
-        videoThumbnail: true,
-        
 
         repostUser: {
           select: {

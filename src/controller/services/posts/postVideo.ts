@@ -2,51 +2,72 @@
 import { Response, Request, NextFunction } from "express";
 import { v2 as cloudinary } from "cloudinary";
 import { uploadVideo } from "../../../config/multer";
+import { uploadVideoToCloudinary } from "../../../config/cloudinary";
 import prisma from "../../../lib/prisma/init";
+import { createSerializedResponse } from "../../../utils/serialization";
 
 export const postVideo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.file) {
-      res.status(400).json({ message: "No video file provided" });
+      res.status(400).json(createSerializedResponse(
+        null,
+        "No video file provided or invalid file format",
+        400
+      ));
       return;
     }
 
     const { postText, videoTitle } = req.body;
     const userId = (req as any).user.id;
 
-    // Upload video to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: "video",
-      folder: "uploads/videos",
-    });
+    try {
+      // Upload video to Cloudinary
+      const uploadResult = await uploadVideoToCloudinary(req.file);
+      
+      if (!uploadResult.secure_url) {
+        res.status(500).json(createSerializedResponse(
+          null,
+          "Failed to upload video to Cloudinary",
+          500
+        ));
+        return;
+      }
 
-    // Create a new post using Prisma
-    const newPost = await prisma.post.create({
-      data: {
-        userId,
-        postText,
-        videoTitle,
-        videoUri: result.secure_url,
-        videoThumbnail: cloudinary.url(result.public_id, {
-          resource_type: "video",
-          format: "jpg",
-          transformation: [
-            { width: 300, height: 300, crop: "fill" },
-            { start_offset: "0" },
-          ],
-        }),
-      },
-      include: {
-        user: true,
-      },
-    });
+      // Create a new post using Prisma
+      const newPost = await prisma.post.create({
+        data: {
+          userId,
+          postText,
+          videoTitle,
+          videoUri: uploadResult.secure_url,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              userName: true,
+              imageUri: true,
+            }
+          },
+        },
+      });
 
-    res.status(201).json({
-      message: "Video posted successfully",
-      post: newPost,
-    });
+      res.status(201).json(createSerializedResponse(
+        { post: newPost },
+        "Video posted successfully",
+        201
+      ));
+    } catch (uploadError) {
+      console.error("Error uploading to Cloudinary:", uploadError);
+      res.status(500).json(createSerializedResponse(
+        { error: uploadError instanceof Error ? uploadError.message : 'Unknown error occurred' },
+        "Failed to upload video to Cloudinary",
+        500
+      ));
+    }
   } catch (error) {
-    console.error("Error uploading video:", error);
+    console.error("Error in postVideo:", error);
     next(error);
   }
 };

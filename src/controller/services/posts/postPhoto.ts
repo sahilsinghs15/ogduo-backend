@@ -1,3 +1,4 @@
+//Not useful
 import { Response, Request } from "express";
 import config from "../../../config/env/";
 export const postPhoto = (req: any, res: Response) => {

@@ -7,7 +7,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-export const uploadToCloudinary = async (buffer: Buffer): Promise<{ secure_url?: string }> => {
+export const uploadImageToCloudinary = async (buffer: Buffer): Promise<{ secure_url?: string }> => {
   try {
     // Convert buffer to base64
     const b64 = buffer.toString('base64');
@@ -16,12 +16,56 @@ export const uploadToCloudinary = async (buffer: Buffer): Promise<{ secure_url?:
     // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(dataURI, {
       resource_type: 'auto',
-      folder: 'posts'
+      folder: 'postsImage'
     });
 
     return { secure_url: result.secure_url };
   } catch (error) {
     console.error('Cloudinary upload error:', error);
     return {};
+  }
+};
+
+export const uploadVideoToCloudinary = async (file: Express.Multer.File): Promise<{ secure_url?: string }> => {
+  try {
+    if (!file || !file.buffer) {
+      throw new Error('No file provided');
+    }
+
+    // Create a temporary file path for the video
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'video',
+          folder: 'postsVideo',
+          allowed_formats: ['mp4', 'mov', 'avi', 'mkv'],
+          transformation: [
+            { quality: 'auto' },
+            { fetch_format: 'mp4' }
+          ]
+        },
+        (error, result) => {
+          if (error || !result) {
+            console.error('Cloudinary upload error:', error);
+            reject(error || new Error('Upload failed'));
+            return;
+          }
+          resolve(result);
+        }
+      );
+
+      // Handle potential stream errors
+      uploadStream.on('error', (error) => {
+        console.error('Stream upload error:', error);
+        reject(error);
+      });
+
+      uploadStream.end(file.buffer);
+    });
+
+    return { secure_url: result.secure_url };
+  } catch (error) {
+    console.error('Cloudinary upload error:', error);
+    throw error; // Let the controller handle the error
   }
 };

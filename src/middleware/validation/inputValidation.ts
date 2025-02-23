@@ -81,20 +81,14 @@ export const audioPostValidation = [
 
 export const videoPostValidation = [
   ...basePostValidation,
-  body("videoUri")
-    .notEmpty()
-    .withMessage("Video URI is required")
-    .isURL()
-    .withMessage("Invalid video URI"),
+  body("postText")
+    .optional()
+    .isString()
+    .withMessage("Post text must be a string"),
   body("videoTitle")
     .optional()
     .isString()
-    .withMessage("Video title must be a string"),
-  body("videoThumbnail")
-    .notEmpty()
-    .withMessage("Video thumbnail is required")
-    .isURL()
-    .withMessage("Invalid video thumbnail URL")
+    .withMessage("Video title must be a string")
 ];
 
 export const createPostValidator = [

@@ -11,8 +11,7 @@ export const postContent = async (req: Request, res: Response, next: NextFunctio
       postText,
       audioUri,
       videoUri,
-      videoTitle,
-      videoThumbnail
+      videoTitle
     } = req.body;
 
     // Handle URL posts (for text posts that contain URLs)
@@ -62,8 +61,7 @@ export const postContent = async (req: Request, res: Response, next: NextFunctio
               }),
           ...(videoUri && {
             videoUri: ensureHttpUrl(videoUri),
-            videoTitle,
-            videoThumbnail
+            videoTitle
           })
         }
       });

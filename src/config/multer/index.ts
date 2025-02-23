@@ -64,10 +64,10 @@ const fileFilter = (req:any, file:any, cb:any) => {
 };
 
 const fileFilterVideo = (req:any, file:any, cb:any) => {
-  if (file.mimetype === "video/mp4") {
+  if (file.mimetype.startsWith("video/")) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only MP4 videos are supported."));
+    cb(new Error("Invalid file type. Only video files are supported."));
   }
 };
 
@@ -93,8 +93,8 @@ export const uploadPostImage = multer({
 });
 
 export const uploadVideo = multer({
-  storage: videoStorage,
-  limits: { fileSize: 16 * 1024 * 1024 }, // 16 MB
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
   fileFilter: fileFilterVideo,
 });
 

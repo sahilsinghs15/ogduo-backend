@@ -51,7 +51,6 @@ model Post {
   audioTitle     String?
   videoUri       String?
   videoThumbnail String?
-  comments       Comment[]
   videoTitle     String?
   photoUri       String[]
   postText       String?

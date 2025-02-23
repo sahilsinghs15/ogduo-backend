@@ -94,7 +94,7 @@ router.post(
 router.post(
   "/post/video",
   auth,
-  uploadVideo.single("video") ,
+  uploadVideo.single('video'),
   videoPostValidation,
   handleErrors,
   postVideo 
@@ -109,13 +109,6 @@ router.get("/search-people", searchValidator, handleErrors, searchPeople as any)
 // Cloudinary-based photo upload
 router.post("/upload-photo", uploadProfileImage.single("photo"), profilePhotoUpload as any);
 router.post("/upload-post-photo", uploadPostImage.single("photo"), postPhotoUpload as any);
-
-// Video upload (remaining with existing logic)
-router.post(
-  "/upload-video",
-  isProduction ? uploadVideo.single("video") : uploadVideo.single("video"),
-  postVideo as any
-);
 
 // Audio upload (remaining with existing logic)
 router.post(
